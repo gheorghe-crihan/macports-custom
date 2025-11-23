@@ -1,0 +1,52 @@
+# -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:ft=tcl:et:sw=4:ts=4:sts=4
+
+PortSystem              1.0
+
+name                    c2ps
+version                 4.0
+revision                0
+distfiles               ${name}-${version}.tar.gz
+
+homepage                http://www.cs.technion.ac.il/users/c2ps/
+
+master_sites            ${homepage}
+
+categories              print
+
+# Based on the original FreeBSD port by: hrs@FreeBSD.org
+maintainers             nomaintainer
+platforms               darwin freebsd
+
+supported_archs         x86 x86_64
+
+description             PostScript pretty-printer for C source
+
+
+long_description        A PostScript pretty-printer for C source with numerous features. \
+\
+                        Released under the GPL by Dmitri Shtilman <dash@vision10.technion.ac.il> \
+                        and Dmitri Makarov <dimm@vnet.ibm.com>.
+
+license                 GPL
+
+checksums               rmd160  c5f23d3e34d7390d4cb0b0a6334103b1b8879812 \
+                        sha256  c22800552b6018a7f01978cf918ad11ec780404b3fa87888e76929a08414a860 \
+                        size    48137
+
+use_configure           no
+
+depends_lib             port:libpaper
+
+patchfiles              c2ps.c.patch \
+                        Makefile.patch
+
+build.args-append       "CFLAGS+=-I\${LOCALBASE}/include"
+
+#PLIST_FILES            bin/${name} share/man/man1/${name}.1.gz
+
+destroot {
+                        xinstall -m 0755 ${worksrcpath}/${name} ${destroot}${prefix}/bin
+
+                        xinstall -d ${destroot}${prefix}/share/man/man1
+                        xinstall -m 0644 ${worksrcpath}/${name}.1 ${destroot}${prefix}/share/man/man1
+}
