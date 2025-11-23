@@ -13,3 +13,5 @@ To enable use from the macports _port(1)_ shell, do the following:
 
 2. Issue a _portindex(1)_ command.
 
+
+**NOTE:** The repository contains submodules, so please checkout with ```git recursive```.

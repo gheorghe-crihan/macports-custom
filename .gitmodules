@@ -1,0 +1,3 @@
+[submodule "x11/xfishtank"]
+	path = x11/xfishtank
+	url = git@github.com:gheorghe-crihan/macports-xfishtank.git
