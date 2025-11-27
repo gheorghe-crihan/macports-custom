@@ -22,6 +22,13 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 #libzip_la_LDFLAGS=-version-info 1:0
 #libzip_la_LIBADD=@LIBOBJS@
 
+add_custom_command(
+        OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/libzip-0.7.1/lib/zip_err_str.c
+        COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/libzip-0.7.1/lib/make_zip_err_str.sh ${CMAKE_CURRENT_SOURCE_DIR}/libzip-0.7.1/lib/zip.h ${CMAKE_CURRENT_SOURCE_DIR}/libzip-0.7.1/lib/zip_err_str.c
+        DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/libzip-0.7.1/lib/zip.h
+        COMMENT "Generating zip_err_str.c..."
+    )
+
 add_library(libzip STATIC
 	libzip-0.7.1/lib/zip_add.c
 	libzip-0.7.1/lib/zip_close.c
@@ -81,12 +88,6 @@ target_include_directories(libzip PUBLIC
 add_executable(runzip src/runzip.c)
 
 target_link_libraries(runzip PRIVATE libzip iconv z)
-#BUILT_SOURCES=zip_err_str.c
-
-#EXTRA_DIST=make_zip_err_str.sh
-
-#zip_err_str.c: zip.h make_zip_err_str.sh
-#	sh $(srcdir)/make_zip_err_str.sh $(srcdir)/zip.h zip_err_str.c
 
 enable_testing()
 
