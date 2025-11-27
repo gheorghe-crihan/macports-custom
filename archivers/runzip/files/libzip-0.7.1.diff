@@ -1,0 +1,258 @@
+diff -ur ./libzip-0.7.1.orig/Makefile.am ./libzip-0.7.1/Makefile.am
+--- ./libzip-0.7.1.orig/Makefile.am	2004-11-18 09:23:13.000000000 -0800
++++ ./libzip-0.7.1/Makefile.am	2025-11-26 01:38:36.000000000 -0800
+@@ -1,10 +1,6 @@
+ # not GPL, thus no COPYING
+ AUTOMAKE_OPTIONS=foreign
+ 
+-SUBDIRS=lib src man regress
++# not needed for runzip: SUBDIRS=src man regress
++SUBDIRS=lib
+ 
+-pkgconfigdir = $(libdir)/pkgconfig
+-pkgconfig_DATA = libzip.pc
+-
+-EXTRA_DIST=	libzip.pc.in \
+-		libzip-uninstalled.pc.in
+Only in ./libzip-0.7.1.orig: Makefile.in
+Only in ./libzip-0.7.1.orig: aclocal.m4
+Only in ./libzip-0.7.1.orig: config.h.in
+Only in ./libzip-0.7.1.orig: configure
+diff -ur ./libzip-0.7.1.orig/configure.ac ./libzip-0.7.1/configure.ac
+--- ./libzip-0.7.1.orig/configure.ac	2006-05-18 02:59:33.000000000 -0700
++++ ./libzip-0.7.1/configure.ac	2025-11-26 01:38:36.000000000 -0800
+@@ -52,11 +52,5 @@
+ esac
+ AC_SUBST([MANFMT])
+ 
+-AC_CONFIG_FILES([Makefile
+-		 libzip.pc
+-		 libzip-uninstalled.pc
+-		 man/Makefile
+-		 lib/Makefile
+-		 regress/Makefile
+-		 src/Makefile])
++AC_CONFIG_FILES([Makefile lib/Makefile])
+ AC_OUTPUT
+diff -ur ./libzip-0.7.1.orig/lib/Makefile.am ./libzip-0.7.1/lib/Makefile.am
+--- ./libzip-0.7.1.orig/lib/Makefile.am	2006-04-23 06:09:53.000000000 -0700
++++ ./libzip-0.7.1/lib/Makefile.am	2025-11-26 01:38:36.000000000 -0800
+@@ -1,6 +1,5 @@
+-lib_LTLIBRARIES = libzip.la
+-noinst_HEADERS = zipint.h
+-include_HEADERS = zip.h
++noinst_LTLIBRARIES = libzip.la
++noinst_HEADERS = zipint.h zip.h
+ 
+ libzip_la_LDFLAGS=-version-info 1:0
+ libzip_la_LIBADD=@LIBOBJS@
+Only in ./libzip-0.7.1.orig/lib: Makefile.in
+diff -ur ./libzip-0.7.1.orig/lib/zip.h ./libzip-0.7.1/lib/zip.h
+--- ./libzip-0.7.1.orig/lib/zip.h	2006-04-25 15:06:05.000000000 -0700
++++ ./libzip-0.7.1/lib/zip.h	2025-11-26 01:38:36.000000000 -0800
+@@ -176,7 +176,13 @@
+ const char *zip_get_name(struct zip *, int, int);
+ int zip_get_num_files(struct zip *);
+ int zip_name_locate(struct zip *, const char *, int);
++enum runzip_direction {
++    RUNZIP_NODIR,
++    RUNZIP_TO_UNIX,
++    RUNZIP_TO_WINDOWS,
++};
+ struct zip *zip_open(const char *, int, int *);
++struct zip *zip_open2(const char *, int, int *, enum runzip_direction);
+ int zip_rename(struct zip *, int, const char *);
+ int zip_replace(struct zip *, int, struct zip_source *);
+ int zip_set_archive_comment(struct zip *, const char *, int);
+diff -ur ./libzip-0.7.1.orig/lib/zip_close.c ./libzip-0.7.1/lib/zip_close.c
+--- ./libzip-0.7.1.orig/lib/zip_close.c	2006-05-09 10:21:47.000000000 -0700
++++ ./libzip-0.7.1/lib/zip_close.c	2025-11-26 01:38:36.000000000 -0800
+@@ -136,7 +136,7 @@
+ 		error = 1;
+ 		break;
+ 	    }
+-	    if (_zip_dirent_read(&de, za->zp, NULL, 0, 1, &za->error) != 0) {
++	    if (_zip_dirent_read(&de, za->zp, NULL, 0, 1, &za->error, za->runzip) != 0) {
+ 		error = 1;
+ 		break;
+ 	    }
+diff -ur ./libzip-0.7.1.orig/lib/zip_dirent.c ./libzip-0.7.1/lib/zip_dirent.c
+--- ./libzip-0.7.1.orig/lib/zip_dirent.c	2006-04-23 07:51:45.000000000 -0700
++++ ./libzip-0.7.1/lib/zip_dirent.c	2025-11-26 01:38:36.000000000 -0800
+@@ -172,6 +172,18 @@
+ 
+ 
+ 
++static int
++is_directory(unsigned short madeby, unsigned short ext_attrib) {
++    const int MADEBY_DOS = 0x0000;
++    const int MADEBY_UNIX = 0x0300;
++    int is_dir =
++        (((madeby & 0xff00) == MADEBY_DOS)
++        &&  (ext_attrib & 0x10))
++        || (((madeby & 0xff00) == MADEBY_UNIX)
++            &&  (ext_attrib & (0x111 << 16)));
++    return is_dir;
++}
++
+ /* _zip_dirent_read(zde, fp, bufp, left, localp, error):
+    Fills the zip directory entry zde.
+ 
+@@ -189,7 +201,8 @@
+ int
+ _zip_dirent_read(struct zip_dirent *zde, FILE *fp,
+ 		 unsigned char **bufp, unsigned int left, int localp,
+-		 struct zip_error *error)
++		 struct zip_error *error,
++         enum runzip_direction direction)
+ {
+     unsigned char buf[CDENTRYSIZE];
+     unsigned char *cur;
+@@ -262,6 +275,32 @@
+ 	zde->offset = _zip_read4(&cur);
+     }
+ 
++    /* Added by vlm@ to unlock unicode filenames and set proper perms. */
++    if(!localp && direction != RUNZIP_NODIR) {
++        int old_madeby = zde->version_madeby;
++        int is_dir = is_directory(zde->version_madeby, zde->ext_attrib);
++        const int MADEBY_DOS = 0x0000;
++        const int MADEBY_UNIX = 0x0300;
++        const int MADEBY_NTFS = 0x0B00;
++
++        if(direction == RUNZIP_TO_UNIX) {
++            if(zde->version_madeby == 0)
++                zde->version_madeby = 0x1e;
++            if((zde->version_madeby & 0xff00) == MADEBY_DOS)
++                zde->version_madeby = (zde->version_madeby & ~0xff00)
++                                        |  MADEBY_UNIX;
++            if(zde->ext_attrib == 0 || (old_madeby & 0xff00) != MADEBY_UNIX)
++                zde->ext_attrib = ((0100644 | (is_dir?0111:0)) << 16);
++        } else if(direction == RUNZIP_TO_WINDOWS) {
++            zde->version_madeby = (zde->version_madeby & ~0xff)
++                                    | 0x14;
++            if((zde->version_madeby & 0xff00) == MADEBY_UNIX)
++                zde->version_madeby = (zde->version_madeby & ~0xff00)
++                                        |  MADEBY_NTFS;
++            zde->ext_attrib = 0;
++        }
++    }
++
+     zde->filename = NULL;
+     zde->extrafield = NULL;
+     zde->comment = NULL;
+diff -ur ./libzip-0.7.1.orig/lib/zip_file_get_offset.c ./libzip-0.7.1/lib/zip_file_get_offset.c
+--- ./libzip-0.7.1.orig/lib/zip_file_get_offset.c	2006-04-23 07:51:45.000000000 -0700
++++ ./libzip-0.7.1/lib/zip_file_get_offset.c	2025-11-26 01:38:36.000000000 -0800
+@@ -66,7 +66,7 @@
+ 	return 0;
+     }
+ 
+-    if (_zip_dirent_read(&de, za->zp, NULL, 0, 1, &za->error) != 0)
++    if (_zip_dirent_read(&de, za->zp, NULL, 0, 1, &za->error, za->runzip) != 0)
+ 	return 0;
+ 
+     offset += LENTRYSIZE + de.filename_len + de.extrafield_len;
+diff -ur ./libzip-0.7.1.orig/lib/zip_open.c ./libzip-0.7.1/lib/zip_open.c
+--- ./libzip-0.7.1.orig/lib/zip_open.c	2006-05-05 16:13:40.000000000 -0700
++++ ./libzip-0.7.1/lib/zip_open.c	2025-11-26 01:38:36.000000000 -0800
+@@ -51,13 +51,19 @@
+ static unsigned char *_zip_memmem(const unsigned char *, int,
+ 				  const unsigned char *, int);
+ static struct zip_cdir *_zip_readcdir(FILE *, unsigned char *, unsigned char *,
+-				 int, int, struct zip_error *);
++				 int, int, struct zip_error *, enum runzip_direction);
+ 
+ 
+ 
+ struct zip *
+ zip_open(const char *fn, int flags, int *zep)
+ {
++    return zip_open2(fn, flags, zep, RUNZIP_NODIR);
++}
++
++struct zip *
++zip_open2(const char *fn, int flags, int *zep, enum runzip_direction direction)
++{
+     FILE *fp;
+     unsigned char *buf, *match;
+     int a, i, buflen, best;
+@@ -141,7 +147,7 @@
+ 	/* to avoid finding the same match all over again */
+ 	match++;
+ 	if ((cdirnew=_zip_readcdir(fp, buf, match-1, buflen, flags,
+-				   &err2)) == NULL) {
++				   &err2, direction)) == NULL) {
+ 	    if (best == -2) {
+ 		set_error(zep, &err2, 0);
+ 		best = -1;
+@@ -193,6 +199,7 @@
+ 
+     za->zp = fp;
+     za->cdir = cdir;
++    za->runzip = direction;
+     
+     if ((za->zn=strdup(fn)) == NULL) {
+ 	set_error(zep, NULL, ZIP_ER_MEMORY);
+@@ -239,7 +246,7 @@
+ 
+ static struct zip_cdir *
+ _zip_readcdir(FILE *fp, unsigned char *buf, unsigned char *eocd, int buflen,
+-	      int flags, struct zip_error *error)
++	      int flags, struct zip_error *error, enum runzip_direction direction)
+ {
+     struct zip_cdir *cd;
+     unsigned char *cdp, **bufp;
+@@ -320,7 +327,7 @@
+ 
+     for (i=0; i<cd->nentry; i++) {
+ 	if ((_zip_dirent_read(cd->entry+i, fp, bufp, eocd-cdp, 0,
+-			      error)) < 0) {
++			      error, direction)) < 0) {
+ 	    cd->nentry = i;
+ 	    _zip_cdir_free(cd);
+ 	    return NULL;
+@@ -374,7 +381,7 @@
+ 	    return -1;
+ 	}
+ 	
+-	if (_zip_dirent_read(&temp, fp, NULL, 0, 1, error) == -1)
++	if (_zip_dirent_read(&temp, fp, NULL, 0, 1, error, RUNZIP_NODIR) == -1)
+ 	    return -1;
+ 	
+ 	if (_zip_headercomp(cd->entry+i, 0, &temp, 1) != 0) {
+diff -ur ./libzip-0.7.1.orig/lib/zipint.h ./libzip-0.7.1/lib/zipint.h
+--- ./libzip-0.7.1.orig/lib/zipint.h	2006-04-25 15:06:05.000000000 -0700
++++ ./libzip-0.7.1/lib/zipint.h	2025-11-26 01:38:36.000000000 -0800
+@@ -106,6 +106,8 @@
+     int nfile;			/* number of opened files within archive */
+     int nfile_alloc;		/* number of files allocated */
+     struct zip_file **file;	/* opened files within archive */
++
++    enum runzip_direction runzip;
+ };
+ 
+ /* file in zip archive, part of API */
+@@ -200,7 +202,8 @@
+ void _zip_dirent_finalize(struct zip_dirent *);
+ void _zip_dirent_init(struct zip_dirent *);
+ int _zip_dirent_read(struct zip_dirent *, FILE *,
+-		     unsigned char **, unsigned int, int, struct zip_error *);
++		     unsigned char **, unsigned int, int, struct zip_error *,
++             enum runzip_direction);
+ int _zip_dirent_write(struct zip_dirent *, FILE *, int, struct zip_error *);
+ 
+ void _zip_entry_free(struct zip_entry *);
+Only in ./libzip-0.7.1.orig: ltmain.sh
+Only in ./libzip-0.7.1.orig/man: Makefile.in
+Only in ./libzip-0.7.1.orig/regress: Makefile.in
+diff -ur ./libzip-0.7.1.orig/src/Makefile.am ./libzip-0.7.1/src/Makefile.am
+--- ./libzip-0.7.1.orig/src/Makefile.am	2004-11-18 09:23:13.000000000 -0800
++++ ./libzip-0.7.1/src/Makefile.am	2025-11-26 01:38:36.000000000 -0800
+@@ -1,4 +1,4 @@
+-bin_PROGRAMS=zipcmp zipmerge
++noinst_PROGRAMS=zipcmp zipmerge
+ 
+ zipcmp_CPPFLAGS=-I${top_srcdir}/lib
+ zipcmp_LDADD=../lib/libzip.la
+Only in ./libzip-0.7.1.orig/src: Makefile.in

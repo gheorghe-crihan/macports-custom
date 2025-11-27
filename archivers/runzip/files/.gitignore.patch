@@ -1,0 +1,10 @@
+--- ./.gitignore,orig	2025-11-26 18:57:47.000000000 -0800
++++ ./.gitignore	2025-11-26 12:17:58.000000000 -0800
+@@ -11,6 +11,7 @@
+ libzip-0.7.1/*
+ 
+ config/
++build/
+ autom4te.cache
+ aclocal.m4
+ config.h.in
