@@ -26,11 +26,15 @@ depends_lib port:qtspell \
             port:poppler-qt5 \
             port:podofo \
             port:tesseract-eng \
+            port:enchant \
             port:qt5-qtimageformats \
             port:xsane
 
 configure.args-append \
-    -DINTL_LDFLAGS=-lintl
+    -DCMAKE_CXX_COMPILER:STRING=clang-mp-18 \
+    -DCMAKE_C_COMPILER:STRING=clang-mp-18 \
+    -DCMAKE_CXX_STANDARD:STRING=11
+#+cmake_policy(SET CMP0100 NEW)
 
 patchfiles CMakeLists.txt.patch \
            gtk-src-recognizer.cc.patch \

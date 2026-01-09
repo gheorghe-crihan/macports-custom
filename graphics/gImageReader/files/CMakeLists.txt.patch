@@ -1,13 +1,9 @@
 --- CMakeLists.txt.orig
 +++ CMakeLists.txt
-@@ -3,6 +3,11 @@ LIST(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+@@ -3,6 +3,7 @@ LIST(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
  INCLUDE(GSettings)
  SET(ENV{LC_ALL} "C")
  
-+SET(CMAKE_CXX_COMPILER clang-mp-18)
-+SET(CMAKE_C_COMPILER clang-mp-18)
-+SET(CMAKE_CXX_STANDARD 11)
-+SET(CMAKE_INSTALL_PREFIX /opt/local)
 +cmake_policy(SET CMP0100 NEW)
  
  # Project properties
