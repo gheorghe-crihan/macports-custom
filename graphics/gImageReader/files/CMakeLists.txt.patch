@@ -1,6 +1,6 @@
---- CMakeLists.txt.orig
-+++ CMakeLists.txt
-@@ -3,6 +3,7 @@ LIST(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+--- CMakeLists.txt.orig	2022-01-28 15:00:34.000000000 -0800
++++ CMakeLists.txt	2026-01-09 04:03:29.000000000 -0800
+@@ -6,6 +6,7 @@
  INCLUDE(GSettings)
  SET(ENV{LC_ALL} "C")
  
@@ -8,23 +8,25 @@
  
  # Project properties
  PROJECT(gimagereader)
-@@ -47,7 +52,7 @@ ADD_DEFINITIONS(-DPACKAGE_REVISION=\"${PACKAGE_REVISION}\")
+@@ -48,8 +49,8 @@
  ADD_DEFINITIONS(-DGETTEXT_PACKAGE=\"${CMAKE_PROJECT_NAME}\")
  ADD_DEFINITIONS(-DENABLE_VERSIONCHECK=${ENABLE_VERSIONCHECK})
  ADD_DEFINITIONS(-DMANUAL_DIR=\"${MANUAL_DIR}\")
--ADD_DEFINITIONS(-std=c++11)
-+#ADD_DEFINITIONS(-std=c++11)
+-SET(CMAKE_CXX_STANDARD 14)
+-SET(CXX_STANDARD_REQUIRED ON)
++#SET(CMAKE_CXX_STANDARD 14)
++#SET(CXX_STANDARD_REQUIRED ON)
  
  
  # Dependencies
-@@ -227,7 +232,10 @@ TARGET_LINK_LIBRARIES(gimagereader
-     ${TESSERACT_LDFLAGS}
-     ${gimagereader_LIBS}
-     ${SANE_LDFLAGS}
+@@ -329,7 +330,10 @@
+     ${ddjvuapi_LDFLAGS}
+     ${ENCHANT_LDFLAGS}
+     ${PODOFO_LDFLAGS}
 +    -L/opt/local/lib/libomp
      -ldl
 +    -lintl
 +    -lstdc++
-     -lgomp
  )
- SET_TARGET_PROPERTIES(gimagereader PROPERTIES COMPILE_FLAGS "-fopenmp")
+ 
+ FIND_PACKAGE(OpenMP REQUIRED)

@@ -5,7 +5,7 @@ PortGroup github 1.0
 PortGroup qt5 1.0
 PortGroup cmake 1.0
 
-github.setup manisandro gImageReader 3.2.0 v
+github.setup manisandro gImageReader 3.4.0 v
 # Change github.tarball_from to 'releases' or 'archive' next update.
 github.tarball_from archive
 # textproc?
@@ -33,9 +33,7 @@ depends_lib port:qtspell \
 configure.args-append \
     -DCMAKE_CXX_COMPILER:STRING=clang-mp-18 \
     -DCMAKE_C_COMPILER:STRING=clang-mp-18 \
-    -DCMAKE_CXX_STANDARD:STRING=11
+    -DCMAKE_CXX_STANDARD:STRING=14
 #+cmake_policy(SET CMP0100 NEW)
 
-patchfiles CMakeLists.txt.patch \
-           gtk-src-recognizer.cc.patch \
-           qt-src-recognizer.cc.patch
+patchfiles CMakeLists.txt.patch
