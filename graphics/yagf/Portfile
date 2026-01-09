@@ -11,7 +11,7 @@ github.tarball_from archive
 # textproc?
 categories graphics
 license GPL-3
-maintainers {gmail.com:manisandro} openmaintainer
+maintainers {gmail.com:sibskull} openmaintainer
 supported_archs noarch
 description YAGF is a graphical front-end for cuneiform and tesseract OCR tools
 long_description YAGF is a graphical front-end for cuneiform and tesseract OCR tools \

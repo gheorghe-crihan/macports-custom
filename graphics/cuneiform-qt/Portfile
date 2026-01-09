@@ -1,0 +1,31 @@
+# -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:ft=tcl:et:sw=4:ts=4:sts=4
+
+PortSystem 1.0
+PortGroup github 1.0
+PortGroup qt4 1.0
+PortGroup qmake 1.0
+
+github.setup sibskull cuneiform-qt 0.1.4-alt2
+# Change github.tarball_from to 'releases' or 'archive' next update.
+github.tarball_from archive
+# textproc?
+categories graphics
+license GPL-3
+maintainers {gmail.com:sibskull} openmaintainer
+supported_archs noarch
+description Cuneiform-Qt is a graphical interface for Cuneiform OCR
+long_description Cuneiform-Qt is a graphical interface for Cuneiform OCR \
+                 ...
+homepage https://github.com/sibskull/cuneiform-qt
+platforms any
+checksums           rmd160  d87a176f18a39660dcc5daba13c829968ecd6a9b \
+                    sha256  b8dc52f0781c27613e3590dd969953b37680036677b5ba5533bf44742d6412b9 \
+                    size    40597
+
+destroot {
+         xinstall -d ${destroot}/Applications/MacPorts
+         copy ${worksrcpath}/cuneiform-qt.app ${destroot}/Applications/MacPorts/
+}
+
+#depends_build port:aspell
+depends_lib  port:cuneiform
