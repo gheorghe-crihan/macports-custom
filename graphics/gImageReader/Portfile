@@ -1,0 +1,36 @@
+# -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:ft=tcl:et:sw=4:ts=4:sts=4
+
+PortSystem 1.0
+PortGroup github 1.0
+PortGroup qt5 1.0
+PortGroup cmake 1.0
+
+github.setup manisandro gImageReader 3.2.0 v
+# Change github.tarball_from to 'releases' or 'archive' next update.
+github.tarball_from archive
+# textproc?
+categories graphics
+license GPL-3
+maintainers {gmail.com:manisandro} openmaintainer
+supported_archs noarch
+description A Gtk/Qt front-end to tesseract-ocr
+long_description A Gtk/Qt front-end to tesseract-ocr \
+                 ...
+homepage https://github.com/manisandro/gImageReader
+platforms any
+checksums           rmd160  d30bb693901c06eaff635c76f2f8695f5bed01ab \
+                    sha256  c695ff96ed15a4d90e785250c94723f6fdb7f84bd4cfc1f2926fa62ced30b610 \
+                    size    569044
+#depends_build port:aspell
+depends_lib port:qtspell \
+            port:poppler-qt5 \
+            port:podofo \
+            port:tesseract-eng \
+            port:xsane
+
+configure.args-append \
+    -DINTL_LDFLAGS=-lintl
+
+patchfiles CMakeLists.txt.patch \
+           gtk-src-recognizer.cc.patch \
+           qt-src-recognizer.cc.patch

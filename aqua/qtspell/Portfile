@@ -22,7 +22,7 @@ checksums           rmd160  1d691d02f1af21a83a43b58309b052edae0aae0f \
                     sha256  e3b7e2b6be9d7aa7b97c2357e6afe501129100eb29dc5612b22ac25620a4f7a8 \
                     size    59779
 #depends_build port:aspell
-depends_lib port:aspell
+#depends_lib port:aspell
 
 configure.args-append \
     -DINTL_LDFLAGS=-lintl

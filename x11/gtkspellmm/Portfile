@@ -23,8 +23,9 @@ checksums           rmd160  6ce35caa1d07ea12a0c0b592937049659f6c2fbb \
                     sha256  5b875a5753ce593274d0c6e803af6300973020c5443905999aba96ed3cef1545 \
                     size    411252
 
-depends_build port:autoconf
-depends_build port:automake
+depends_build port:autoconf \
+              port:automake \
+              mm-common
 depends_lib port:gtkspell3
 
 configure.cxxflags-append " -std=c++11"
