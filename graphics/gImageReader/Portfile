@@ -5,6 +5,8 @@ PortGroup github 1.0
 PortGroup qt5 1.0
 PortGroup cmake 1.0
 
+revision 1
+
 github.setup manisandro gImageReader 3.4.0 v
 # Change github.tarball_from to 'releases' or 'archive' next update.
 github.tarball_from archive
@@ -18,9 +20,9 @@ long_description A Gtk/Qt front-end to tesseract-ocr \
                  ...
 homepage https://github.com/manisandro/gImageReader
 platforms any
-checksums           rmd160  d30bb693901c06eaff635c76f2f8695f5bed01ab \
-                    sha256  c695ff96ed15a4d90e785250c94723f6fdb7f84bd4cfc1f2926fa62ced30b610 \
-                    size    569044
+checksums           rmd160  71ac6b7136f1138942d1db238f95638881dd3cfc \
+                    sha256  2737d628616649cf205513b03849146cd9b24e5eaabe0bd8433bb7d736eac5ae \
+                    size    1328804
 #depends_build port:aspell
 depends_lib port:qtspell \
             port:poppler-qt5 \
