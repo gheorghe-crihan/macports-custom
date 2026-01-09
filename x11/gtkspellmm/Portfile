@@ -1,0 +1,30 @@
+# -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:ft=tcl:et:sw=4:ts=4:sts=4
+
+PortSystem 1.0
+
+name gtkspellmm
+version 3.0.5
+revision 1
+
+master_sites sourceforge:gtkspell
+use_xz yes
+
+# textproc?
+categories x11
+license GPL-2
+maintainers {gmail.com:manisandro} openmaintainer
+supported_archs noarch
+description Spell checking for GTK3 text widgets
+long_description Spell checking for GTK3 text widgets \
+                 ...
+homepage https://git.code.sf.net/p/gtkspell/gtkspellmm
+platforms any
+checksums           rmd160  6ce35caa1d07ea12a0c0b592937049659f6c2fbb \
+                    sha256  5b875a5753ce593274d0c6e803af6300973020c5443905999aba96ed3cef1545 \
+                    size    411252
+
+depends_build port:autoconf
+depends_build port:automake
+depends_lib port:gtkspell3
+
+configure.cxxflags-append " -std=c++11"
