@@ -1,0 +1,33 @@
+# -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:ft=tcl:et:sw=4:ts=4:sts=4
+
+PortSystem 1.0
+PortGroup github 1.0
+PortGroup qt4 1.0
+PortGroup cmake 1.0
+
+github.setup sibskull yagf 0.9.4.3-alt1
+# Change github.tarball_from to 'releases' or 'archive' next update.
+github.tarball_from archive
+# textproc?
+categories graphics
+license GPL-3
+maintainers {gmail.com:manisandro} openmaintainer
+supported_archs noarch
+description YAGF is a graphical front-end for cuneiform and tesseract OCR tools
+long_description YAGF is a graphical front-end for cuneiform and tesseract OCR tools \
+                 ...
+homepage https://github.com/sibskull/yagf
+platforms any
+checksums           rmd160  9d95d83b338232ee32d7aaee7e34aada1e0a4966 \
+                    sha256  03f72c1af4ddbea6f31843bcb6eeddce7e74de39f41e6e1babc72f85e9d00049 \
+                    size    460751
+
+post-extract {
+       reinplace "s|#set(QT_QMAKE_EXECUTABLE /usr/bin/qmake-qt4)|set(QT_QMAKE_EXECUTABLE /opt/local/libexec/qt4/bin/qmake)|g" ${worksrcpath}/CMakeLists.txt
+       reinplace "s|set(CPACK_INSTALL_PREFIX /usr/)|set(CPACK_INSTALL_PREFIX /opt/local/)|g" ${worksrcpath}/CMakeLists.txt
+       reinplace "s|set (CMAKE_INSTALL_PREFIX /usr/)|set (CMAKE_INSTALL_PREFIX /opt/local/)|g" ${worksrcpath}/CMakeLists.txt
+}
+
+#depends_build port:aspell
+depends_lib  port:tesseract-eng \
+            port:cuneiform
