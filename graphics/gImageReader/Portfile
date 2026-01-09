@@ -26,6 +26,7 @@ depends_lib port:qtspell \
             port:poppler-qt5 \
             port:podofo \
             port:tesseract-eng \
+            port:qt5-qtimageformats \
             port:xsane
 
 configure.args-append \
