@@ -1,0 +1,16 @@
+--- src/debug/qmp.cpp.orig	2026-08-25 01:03:29.000000000 -0700
++++ src/debug/qmp.cpp	2026-08-23 21:25:29.000000000 -0700
+@@ -290,11 +290,11 @@
+         return;
+     }
+ 
+-    if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR , &opt, sizeof(opt))) {
++/*    if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt))) {
+         LOG(LOG_REMOTE, LOG_ERROR)("QMP: setsockopt failed");
+         return;
+     }
+-
++*/
+     if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEPORT, &opt, sizeof(opt))) {
+         LOG(LOG_REMOTE, LOG_ERROR)("QMP: setsockopt failed");
+         return;

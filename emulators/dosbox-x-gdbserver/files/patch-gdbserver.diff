@@ -1,0 +1,18 @@
+--- src/debug/gdbserver.cpp.orig	2026-08-25 01:03:46.000000000 -0700
++++ src/debug/gdbserver.cpp	2026-08-23 21:25:00.000000000 -0700
+@@ -52,13 +52,13 @@
+         return;
+     }
+ 
+-    if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) {
++/*    if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) {
+         LOG(LOG_REMOTE, LOG_ERROR)("GDBServer: setsockopt failed: %s", strerror(errno));
+         close(server_fd);
+         server_fd = -1;
+         return;
+     }
+-
++*/
+     if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEPORT, &opt, sizeof(opt)) < 0) {
+         LOG(LOG_REMOTE, LOG_ERROR)("GDBServer: setsockopt failed: %s", strerror(errno));
+         close(server_fd);
